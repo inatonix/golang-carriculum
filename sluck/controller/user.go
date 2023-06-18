@@ -30,12 +30,12 @@ func (c userController) Create(ctx echo.Context) error {
 	}
 
 	u := ToModel(&req)
-	err := c.u.Create(ctx.Request().Context(), &u)
+	id, err := c.u.Create(ctx.Request().Context(), &u)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	return ctx.JSON(http.StatusCreated, "user created.")
+	return ctx.JSON(http.StatusCreated, "created user_id is "+id)
 }
 
 func (c userController) Get(ctx echo.Context) error {

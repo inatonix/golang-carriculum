@@ -8,7 +8,7 @@ import (
 )
 
 type UserUsecase interface {
-	Create(ctx context.Context, u *model.User) error
+	Create(ctx context.Context, u *model.User) (string, error)
 	// Get(ctx context.Context) error
 	// Update(ctx context.Context) error
 	// Delete(ctx context.Context) error
@@ -24,7 +24,12 @@ func NewUserUsecase(r repository.UserRepository) UserUsecase {
 	}
 }
 
-func (u userUsecase) Create(ctx context.Context, user *model.User) error {
+func (u userUsecase) Create(ctx context.Context, user *model.User) (string, error) {
 	// user作成
-	return nil
+	id, err := u.r.Create(ctx, user)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
 }
