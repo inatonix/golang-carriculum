@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 
 	"sluck/usecase"
@@ -19,8 +20,8 @@ type userController struct {
 	u usecase.UserUsecase
 }
 
-func NewUserController() UserController {
-	return &userController{}
+func NewUserController(u usecase.UserUsecase) UserController {
+	return &userController{u: u}
 }
 
 func (c userController) Create(ctx echo.Context) error {
@@ -30,7 +31,9 @@ func (c userController) Create(ctx echo.Context) error {
 	}
 
 	u := ToModel(&req)
-	id, err := c.u.Create(ctx.Request().Context(), &u)
+	// fmt.Println(u, ctx.Request().Context())
+	cc := context.Background()
+	id, err := c.u.Create(cc, u)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err.Error())
 	}

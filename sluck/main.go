@@ -2,6 +2,8 @@ package main
 
 import (
 	"sluck/controller"
+	"sluck/repository"
+	"sluck/usecase"
 
 	"github.com/labstack/echo/v4"
 )
@@ -24,7 +26,9 @@ func main() {
 	e.DELETE("/messages/:id", mc.Update)
 
 	// ユーザーエンドポイント
-	uc := controller.NewUserController()
+	ur := repository.NewUserRepository(db)
+	uu := usecase.NewUserUsecase(ur)
+	uc := controller.NewUserController(uu)
 	e.POST("/users", uc.Create)
 	e.GET("/users/:id", uc.Get)
 	e.PUT("/users/:id", uc.Update)
