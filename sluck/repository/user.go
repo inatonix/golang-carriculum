@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"sluck/model"
+	"strconv"
 )
 
 type UserRepository interface {
@@ -24,5 +25,17 @@ func NewUserRepository(db *sql.DB) UserRepository {
 }
 
 func (r *userRepository) Create(ctx context.Context, user *model.User) (string, error) {
-	return "", nil
+	// save user to db
+	result, err := r.db.Exec("INSERT INTO users (name, email, age) VALUES (?, ?, ?)", user.Name, user.Email, user.Age)
+	if err != nil {
+		return "", err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return "", nil
+	}
+
+	s := strconv.FormatInt(id, 10)
+	return s, nil
 }
