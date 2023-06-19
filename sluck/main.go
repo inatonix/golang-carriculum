@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"sluck/controller"
+	"sluck/infra"
 	"sluck/repository"
 	"sluck/usecase"
 
@@ -10,11 +11,11 @@ import (
 	"github.com/labstack/echo"
 )
 
-type CustomerValidator struct {
+type CustomerValidor struct {
 	validator *validator.Validate
 }
 
-func (cv *CustomerValidator) Validate(i any) error {
+func (cv *CustomerValidor) Validate(i any) error {
 	if err := cv.validator.Struct(i); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -23,9 +24,10 @@ func (cv *CustomerValidator) Validate(i any) error {
 
 func main() {
 	e := echo.New()
-	e.Validator = &CustomerValidator{validator: validator.New()}
+	e.Validator = &CustomerValidor{validator: validator.New()}
 
-	ur := repository.NewUserRepository(nil)
+	db := infra.Connect()
+	ur := repository.NewUserRepository(db)
 	uu := usecase.NewUserUsecase(ur)
 	uc := controller.NewUserController(uu)
 
