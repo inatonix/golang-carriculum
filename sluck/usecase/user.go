@@ -14,11 +14,21 @@ type UserUsecase interface {
 }
 
 type userUsecase struct {
-	r repository.UserRepository
+	r  repository.UserRepository
+	mr repository.MessageRepository
 }
 
-func NewUserUsecase(r repository.UserRepository) UserUsecase {
-	return &userUsecase{r}
+func NewUserUsecase(r repository.UserRepository, mr repository.MessageRepository) UserUsecase {
+	return &userUsecase{r, mr}
+}
+
+func (u *userUsecase) GetByID(ctx context.Context, id string) (*model.User, error) {
+	user, err := u.r.Read(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (c *userUsecase) Create(ctx context.Context, user *model.User) (string, error) {
@@ -28,15 +38,6 @@ func (c *userUsecase) Create(ctx context.Context, user *model.User) (string, err
 	}
 
 	return id, nil
-}
-
-func (c *userUsecase) GetByID(ctx context.Context, id string) (*model.User, error) {
-	user, err := c.r.Read(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
 }
 
 func (c *userUsecase) Update(ctx context.Context, user *model.User) error {
@@ -50,6 +51,12 @@ func (c *userUsecase) Update(ctx context.Context, user *model.User) error {
 
 func (c *userUsecase) Delete(ctx context.Context, id string) error {
 	err := c.r.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// ユーザーのメッセージも削除する
+	err = c.mr.Delete(ctx, id)
 	if err != nil {
 		return err
 	}
