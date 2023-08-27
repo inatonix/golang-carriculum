@@ -55,28 +55,16 @@ func (c *userUsecase) Delete(ctx context.Context, id string) error {
 	c.transaction.DoInTx(ctx, func(ctx context.Context) (any, error) {
 		err := c.r.Delete(ctx, id)
 		if err != nil {
-			return err
+			return nil, err
 		}
-	
+
 		// ユーザーのメッセージも削除する
 		err = c.mr.Delete(ctx, id)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		return nil, nil
-	}
-)
-
-	err := c.r.Delete(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	// ユーザーのメッセージも削除する
-	err = c.mr.Delete(ctx, id)
-	if err != nil {
-		return err
-	}
+	})
 
 	return nil
 }
