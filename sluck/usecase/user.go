@@ -4,6 +4,7 @@ import (
 	"context"
 	"sluck/model"
 	"sluck/repository"
+	"sluck/transaction"
 )
 
 type UserUsecase interface {
@@ -14,12 +15,13 @@ type UserUsecase interface {
 }
 
 type userUsecase struct {
-	r  repository.UserRepository
-	mr repository.MessageRepository
+	r           repository.UserRepository
+	mr          repository.MessageRepository
+	transaction transaction.Transaction
 }
 
-func NewUserUsecase(r repository.UserRepository, mr repository.MessageRepository) UserUsecase {
-	return &userUsecase{r, mr}
+func NewUserUsecase(r repository.UserRepository, mr repository.MessageRepository, transaction transaction.Transaction) UserUsecase {
+	return &userUsecase{r, mr, transaction}
 }
 
 func (u *userUsecase) GetByID(ctx context.Context, id string) (*model.User, error) {
@@ -50,6 +52,21 @@ func (c *userUsecase) Update(ctx context.Context, user *model.User) error {
 }
 
 func (c *userUsecase) Delete(ctx context.Context, id string) error {
+	c.transaction.DoInTx(ctx, func(ctx context.Context) (any, error) {
+		err := c.r.Delete(ctx, id)
+		if err != nil {
+			return err
+		}
+	
+		// ユーザーのメッセージも削除する
+		err = c.mr.Delete(ctx, id)
+		if err != nil {
+			return err
+		}
+		return nil, nil
+	}
+)
+
 	err := c.r.Delete(ctx, id)
 	if err != nil {
 		return err
