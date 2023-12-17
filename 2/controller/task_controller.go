@@ -15,29 +15,26 @@ type TaskController interface {
 	Create(c echo.Context) error
 }
 
-func NewTaskController(u usecase.TaskUsecase) *taskController {
-	return &taskController{u: u}
+func NewTaskController(u usecase.TaskUsecase) TaskController {
+	return &taskController{u}
 }
 
 type taskController struct {
 	u usecase.TaskUsecase
 }
 
-// type TaskController struct {
-// }
-
 func (t *taskController) Get(c echo.Context) error {
-	_, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		msg := fmt.Errorf("parse error: %v", err.Error())
 		return c.JSON(http.StatusBadRequest, msg.Error())
 	}
-	// task, err := t.u.GetTask(id)
-	// if err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, err)
-	// }
+	task, err := t.u.GetTask(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
+	}
 
-	return c.JSON(http.StatusOK, nil)
+	return c.JSON(http.StatusOK, task)
 }
 
 func (t *taskController) Create(c echo.Context) error {
@@ -46,10 +43,10 @@ func (t *taskController) Create(c echo.Context) error {
 		fmt.Println(err)
 		return c.JSON(http.StatusBadRequest, err)
 	}
-	// createdID, err := t.u.CreateTask(task.Title)
-	// if err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, err)
-	// }
+	createdID, err := t.u.CreateTask(task.Title)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
+	}
 
-	return c.JSON(http.StatusOK, nil)
+	return c.JSON(http.StatusOK, createdID)
 }

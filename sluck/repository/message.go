@@ -19,7 +19,12 @@ func NewMessageRepository(db *sql.DB) MessageRepository {
 }
 
 func (r *messageRepository) Delete(ctx context.Context, userID string) error {
-	result, err := r.db.Exec("DELETE FROM messages WHERE user_id = ?", userID)
+	db, ok := GetTx(ctx)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	result, err := db.Exec("DELETE FROM messages WHERE user_id = ?", userID)
 	if err != nil {
 		return err
 	}

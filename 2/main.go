@@ -33,9 +33,9 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	repository := repository.NewTaskRepository(db)
-	usecase := usecase.NewTaskUsecase(repository)
-	taskController := controller.NewTaskController(usecase)
+	taskRepository := repository.NewTaskRepository(db)
+	taskUsecase := usecase.NewTaskUsecase(taskRepository)
+	taskController := controller.NewTaskController(taskUsecase)
 
 	e.GET("/tasks/:id", taskController.Get)
 	e.POST("/tasks", taskController.Create)
